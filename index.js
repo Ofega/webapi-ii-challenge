@@ -7,7 +7,7 @@ server.use(express.json());
 server.get('/api/posts', getAllPosts);
 server.get('/api/posts/:id', getPost);
 server.post('/api/posts', createNewPost);
-// server.get('/api/posts/:id/comments', getAllComments);
+server.get('/api/posts/:id/comments', getAllComments);
 server.post('/api/posts/:id/comments', createNewComment);
 // server.delete('/api/posts/:id', deletePost);
 // server.put('/api/posts/:id', updatePost);
@@ -52,6 +52,28 @@ function createNewPost(req, res) {
                 res.status(500).json({ error: "There was an error while saving the post to the database" });
             })
     }
+}
+
+function getAllComments(req, res) {
+    const { id } = req.params;
+
+    db.findById(id)
+        .then(post => {
+            if (post) {
+                db.findPostComments(id)
+                    .then(comment => {
+                        res.status(200).json(comment);
+                    })
+                    .catch(() => {
+                        res.status(500).json({ error: "The comments information could not be retrieved." });
+                    })
+            } else {
+                res.status(404).json({ error: 'The post with the specified ID does not exist.' });
+            }
+        })
+        .catch(() => {
+            res.status(500).json({ error: "The post information could not be retrieved." });
+        })
 }
 
 function createNewComment(req, res) {
