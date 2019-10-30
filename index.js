@@ -9,8 +9,8 @@ server.get('/api/posts/:id', getPost);
 server.post('/api/posts', createNewPost);
 server.get('/api/posts/:id/comments', getAllComments);
 server.post('/api/posts/:id/comments', createNewComment);
-// server.delete('/api/posts/:id', deletePost);
-// server.put('/api/posts/:id', updatePost);
+server.delete('/api/posts/:id', deletePost);
+server.put('/api/posts/:id', updatePost);
 
 function getAllPosts(req, res) {
     db.find()
@@ -100,6 +100,52 @@ function createNewComment(req, res) {
             .catch(() => {
                 res.status(500).json({ error: "The post information could not be retrieved." });
             })
+    }
+}
+
+function deletePost(req, res) {
+    const { id } = req.params;
+
+    db.findById(id)
+        .then(post => {
+            if (post) {
+                db.remove(id)
+                    .then(() => {
+                        res.status(200).json(post);
+                    })
+                    .catch(() => {
+                        res.status(500).json({error: "The post could not be removed" });
+                    })
+            } else {
+                res.status(404).json({ error: "The post with the specified ID does not exist." });
+            }
+        })
+        .catch(() => {
+            res.status(404).json({error: "The post information could not be retrieved." });
+        })  
+}
+
+function updatePost(req, res) {
+    const { id } = req.params;
+    const { text, contents } = req.body
+
+    if (!text || !contents) {
+        res.status(400).json({ errorMessage: "Please provide title and contents for the post." });
+    } else {
+        db.findById(id)
+            .then(post => {
+                if(post) {
+                    db.update(id, req.body)
+                        .then(() => {
+                            res.status(200).json(post);
+                        })
+                } else {
+                    res.status(404).json({ message: "The post with the specified ID does not exist." });
+                }
+            })
+            .catch(() => {
+                res.status(500).json({error: 'The post information could not be modified.'});
+            });
     }
 }
 
