@@ -4,12 +4,12 @@ const db = require('./data/db');
 const server = express();
 server.use(express.json());
 
-server.get('/api/posts', getAllPosts);
+server.get('/api/posts', getAllPosts); // Works Fine
 server.get('/api/posts/:id', getPost);
 server.post('/api/posts', createNewPost);
 server.get('/api/posts/:id/comments', getAllComments);
 server.post('/api/posts/:id/comments', createNewComment);
-server.delete('/api/posts/:id', deletePost);
+server.delete('/api/posts/:id', deletePost); // Works Fine
 server.put('/api/posts/:id', updatePost);
 
 function getAllPosts(req, res) {
@@ -127,17 +127,17 @@ function deletePost(req, res) {
 
 function updatePost(req, res) {
     const { id } = req.params;
-    const { text, contents } = req.body
+    const { title, contents } = req.body
 
-    if (!text || !contents) {
+    if (!title || !contents) {
         res.status(400).json({ errorMessage: "Please provide title and contents for the post." });
     } else {
-        db.findById(id)
+        db.update(id, req.body)
             .then(post => {
                 if(post) {
-                    db.update(id, req.body)
-                        .then(() => {
-                            res.status(200).json(post);
+                    db.findById(id)
+                        .then((newPost) => {
+                            res.status(200).json(newPost);
                         })
                 } else {
                     res.status(404).json({ message: "The post with the specified ID does not exist." });
