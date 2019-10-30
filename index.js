@@ -4,12 +4,12 @@ const db = require('./data/db');
 const server = express();
 server.use(express.json());
 
-server.get('/api/posts', getAllPosts); // Works Fine
+server.get('/api/posts', getAllPosts);
 server.get('/api/posts/:id', getPost);
 server.post('/api/posts', createNewPost);
 server.get('/api/posts/:id/comments', getAllComments);
 server.post('/api/posts/:id/comments', createNewComment);
-server.delete('/api/posts/:id', deletePost); // Works Fine
+server.delete('/api/posts/:id', deletePost);
 server.put('/api/posts/:id', updatePost);
 
 function getAllPosts(req, res) {
@@ -86,9 +86,12 @@ function createNewComment(req, res) {
         db.findById(id)
             .then((post) => {
                 if (post) {
-                    db.insertComment(req.body)
-                        .then((comment) => {
-                            res.status(201).json(comment);
+                    db.insertComment({text: text, post_id: id})
+                        .then(({ id }) => {
+                            db.findCommentById(id)
+                                .then((comment) => {
+                                    res.status(201).json(comment);
+                                })
                         })
                         .catch(() => {
                             res.status(500).json({ error: "There was an error while saving the comment to the database" });
